@@ -22,6 +22,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+app.get('/', (req, res) => {
+    res.send('hello World, THE API IS RUNNING');
+});
+
 //uses routes
 app.use('/api/products', productsRoute);
 app.use('/api/users', usersRoute);
