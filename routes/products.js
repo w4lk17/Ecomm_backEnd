@@ -4,7 +4,7 @@ import { database } from '../config/helpers.js';
 const router = express.Router();
 
 /*GET ALL PRODUCTS*/
-router.get('/', (req, res) => {
+router.get('/', (req, res) => {//page query parameter localhost:5000/api/products?page=1
     let page = (req.query.page !== undefined && req.query.page != 0) ? req.query.page : 1; //set the current page number
     const limit = (req.query.limit !== undefined && req.query.limit != 0) ? req.query.limit : 10; //set the limit of item per page 
 
@@ -79,12 +79,12 @@ router.get('/:prodId', (req, res) => {
             } else {
                 res.json({ message: `No product found with product id ${productId}` });
             }
-        }).catch(err => console.log(err));
+        }).catch(err => res.json(err));
 
 });
 
 /*GET ALL PRODUCTS FROM ONE PARTICULAR CATEGORY*/
-router.get('/category/:catName', (req, res) => {
+router.get('/category/:catName', (req, res) => {//page query parameter localhost:5000/api/products/category/categoryName?page=1
 
     let page = (req.query.page !== undefined && req.query.page != 0) ? req.query.page : 1; //set the current page number
     const limit = (req.query.limit !== undefined && req.query.limit != 0) ? req.query.limit : 10; //set the limit of item per page 
@@ -100,7 +100,7 @@ router.get('/category/:catName', (req, res) => {
         endValue = 10;
     }
 
-    //Fetch the category neme from the url
+    //Fetch the category name from the url
     const cat_title = req.params.catName;
 
     database.table('products as p')
@@ -127,9 +127,9 @@ router.get('/category/:catName', (req, res) => {
                 });
 
             } else {
-                res.json({ message: `No products found from ${cat_title} category.` });
+                res.json({ message: `No products found matching the category ${cat_title}` });
             }
-        }).catch(err => console.log(err));
+        }).catch(err => res.json(err));
 
 });
 

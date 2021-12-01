@@ -22,8 +22,7 @@ router.get('/', (req, res) => {
                 on: 'u.id = o.user_id'
             }
         ])
-        .withFields(['o.id', 'p.title as name', 'p.description', 'p.price', 'u.username'])
-        .sort({ id: 1 })
+        .withFields(['o.id', 'p.title', 'p.description', 'p.price', 'u.username'])
         .getAll()
         .then(orders => {
             if (orders.length > 0) {
@@ -32,13 +31,13 @@ router.get('/', (req, res) => {
             } else {
                 res.json({ message: `No orders found.` });
             }
-        }).catch(err => console.log(err));
+        }).catch(err => res.json(err));
 
 
 });
 
 /*GET SINGLE ORDERS*/
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
 
     const orderId = req.params.id
 
@@ -57,7 +56,7 @@ router.get('/:id', (req, res) => {
                 on: 'u.id = o.user_id'
             }
         ])
-        .withFields(['o.id', 'p.title as name', 'p.description', 'p.price', 'u.username'])
+        .withFields(['o.id', 'p.title', 'p.description', 'p.price', 'u.username', 'od.quantity as quantityOrdered'])
         .filter({ 'o.id': orderId })
         .getAll()
         .then(orders => {
@@ -65,18 +64,18 @@ router.get('/:id', (req, res) => {
                 res.status(200).json(orders);
 
             } else {
-                res.json({ message: `No orders found with orderId ${orderId}` });
+                res.json({ message: "No orders found" });
             }
-        }).catch(err => console.log(err));
+        }).catch(err => res.json(err));
 
 });
 
 /*PLACE A NEW ORDERS*/
-router.post('/new', (req, res) => {
+router.post('/new', async (req, res) => {
 
     let { userId, products } = req.body;
 
-    if (userId != null && userId > 0 && !isNaN(userId)) {
+    if (userId != null && userId > 0) {
 
         database.table('orders')
             .insert({
@@ -88,7 +87,7 @@ router.post('/new', (req, res) => {
 
                         let data = await database.table('products').filter({ id: p.id }).withFields(['quantity']).get();
 
-                        let incart = p.incart;
+                        let incart = parseInt(p.incart);
 
                         //deduct the numbers of pieces ordered from quantity column in database
                         if (data.quantity > 0) {
@@ -113,21 +112,21 @@ router.post('/new', (req, res) => {
                                     .filter({ id: p.id })
                                     .update({
                                         quantity: data.quantity
-                                    }).then(successNum => { }).catch(err => console.log(err));
-
+                                    }).then(successNum => {
+                                    }).catch(err => console.log(err));
                             }).catch(err => console.log(err));
                     });
                 } else {
                     res.json({ message: 'new order failed while adding new order details', success: false })
                 }
                 res.json({
-                    message: `Order successfully placedwith order id ${newOrderId}`,
+                    message: `Order successfully placed with order id ${newOrderId}`,
                     success: true,
                     order_id: newOrderId,
                     products: products
                 });
 
-            }).catch(err => console.log(err));
+            }).catch(err => res.json(err));
     }
     else {
         res.json({ message: 'New order failed', success: false });
@@ -140,4 +139,5 @@ router.post('/payement', (req, res) => {
         res.status(200).json({ success: true });
     }, 3000);
 });
+
 export default router;
